@@ -178,3 +178,14 @@ input:active {
     transform: rotate(360deg);
   }
 }
+
+.load-more {
+  margin: 0 auto;
+  display: inline-flex;
+  padding: 8px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-radius: 8px;
+background: #4E75FF;    
+}
