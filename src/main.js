@@ -18,7 +18,7 @@ const searchParamsDefault = {
   image_type: 'photo',
   orientation: 'horizontal',
   safesearch: true,
-  per_page: 20,
+  per_page: 40,
 };
 
 let currentPage = 1;
@@ -116,9 +116,14 @@ const showEndOfResultsMessage = () => {
 
 const getImages = async (query, page) => {
   try {
-    const response = await axios.get(
-      `${BASE_URL}q=${query}&page=${page}&per_page=${searchParamsDefault.per_page}&key=${API_KEY}`
-    );
+    const response = await axios.get(BASE_URL, {
+        params: {
+          q: query,
+          page: page,
+          per_page: searchParamsDefault.per_page,
+          key: API_KEY,
+        },
+      });
     const { hits, totalHits } = response.data;
 
     if (hits.length === 0 && page === 1) {
