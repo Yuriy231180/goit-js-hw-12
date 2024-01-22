@@ -41,23 +41,55 @@ const showLoadMoreBtn = state => {
 };
 
 const appendImagesToGallery = hits => {
-  const newImages = hits.map(
-    image =>
-      `
-        <li class="gallery-item">
-          <a href=${image.largeImageURL}> 
-            <img class="gallery-img" src=${image.webformatURL} alt=${image.tags}/>
-          </a>
-          <div class="gallery-text-box">
-            <p>Likes: <span class="text-value">${image.likes}</span></p>
-            <p>Views: <span class="text-value">${image.views}</span></p>
-            <p>Comments: <span class="text-value">${image.comments}</span></p>
-            <p>Downloads: <span class="text-value">${image.downloads}</span></p>
-          </div>
-        </li>
-      `
-  );
-  imagesGallery.innerHTML += newImages.join('');
+  // const newImages = hits.map(
+  //   image =>
+  //     `
+  //       <li class="gallery-item">
+  //         <a href=${image.largeImageURL}>
+  //           <img class="gallery-img" src=${image.webformatURL} alt=${image.tags}/>
+  //         </a>
+  //         <div class="gallery-text-box">
+  //           <p>Likes: <span class="text-value">${image.likes}</span></p>
+  //           <p>Views: <span class="text-value">${image.views}</span></p>
+  //           <p>Comments: <span class="text-value">${image.comments}</span></p>
+  //           <p>Downloads: <span class="text-value">${image.downloads}</span></p>
+  //         </div>
+  //       </li>
+  //     `
+  // );
+  // imagesGallery.innerHTML += newImages.join('');
+  // lightbox.refresh();
+
+  const fragment = document.createDocumentFragment();
+
+  hits.forEach(image => {
+    const galleryItem = document.createElement('li');
+    galleryItem.classList.add('gallery-item');
+
+    const link = document.createElement('a');
+    link.href = image.largeImageURL;
+
+    const img = document.createElement('img');
+    img.classList.add('gallery-img');
+    img.src = image.webformatURL;
+    img.alt = image.tags;
+
+    const textBox = document.createElement('div');
+    textBox.classList.add('gallery-text-box');
+    textBox.innerHTML = `
+      <p>Likes: <span class="text-value">${image.likes}</span></p>
+      <p>Views: <span class="text-value">${image.views}</span></p>
+      <p>Comments: <span class="text-value">${image.comments}</span></p>
+      <p>Downloads: <span class="text-value">${image.downloads}</span></p>
+    `;
+
+    link.appendChild(img);
+    galleryItem.appendChild(link);
+    galleryItem.appendChild(textBox);
+    fragment.appendChild(galleryItem);
+  });
+
+  imagesGallery.appendChild(fragment);
   lightbox.refresh();
 };
 
@@ -100,6 +132,8 @@ const scrollPageByGalleryCardHeight = () => {
       top: cardHeight * 2,
       behavior: 'smooth',
     });
+  } else {
+    console.warn('Gallery card not found. Sorry, you can`t scroll.');
   }
 };
 
@@ -117,28 +151,33 @@ const showEndOfResultsMessage = () => {
 const getImages = async (query, page) => {
   try {
     const response = await axios.get(BASE_URL, {
-        params: {
-          q: query,
-          page: page,
-          per_page: searchParamsDefault.per_page,
-          key: API_KEY,
-        },
-      });
+      params: {
+        q: query,
+        page: page,
+        per_page: searchParamsDefault.per_page,
+        key: API_KEY,
+      },
+    });
     const { hits, totalHits } = response.data;
 
-    if (hits.length === 0 && page === 1) {
-      iziToast.error({
-        position: 'topRight',
-        messageColor: '#FFFFFF',
-        backgroundColor: '#EF4040',
-        titleSize: '8px',
-        closeOnEscape: true,
-        message:
-          'Sorry, there are no images matching your search query. Please try again!',
-      });
-      imagesGallery.innerHTML = '';
-    } else if (hits.length === 0 && page > 1) {
-      showEndOfResultsMessage();
+    // if (hits.length === 0 && page === 1) {
+    //   iziToast.error({
+    if (!hits || hits.length === 0) {
+      if (page === 1) {
+        iziToast.error({
+          position: 'topRight',
+          messageColor: '#FFFFFF',
+          backgroundColor: '#EF4040',
+          titleSize: '8px',
+          closeOnEscape: true,
+          message:
+            'Sorry, there are no images matching your search query. Please try again!',
+        });
+        imagesGallery.innerHTML = '';
+        // } else if (hits.length === 0 && page > 1) {
+      } else {
+        showEndOfResultsMessage();
+      }
     } else {
       if (page === 1) {
         imagesGallery.innerHTML = '';
